@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Society Papers - True Swarm Edition</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Pinyon+Script&family=Playfair+Display:ital,wght@1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --regency-dark: #071013;
+            --regency-teal: #0d212b;
+            --gold-light: #fcf6ba;
+            --gold-mid: #d4af37;
+            --gold-dark: #aa771c;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--regency-dark);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+        }
+
+        #cinematic-stage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, var(--regency-teal) 0%, var(--regency-dark) 85%);
+            opacity: 0;
+            transition: opacity 5s ease-in-out;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.9);
+        }
+
+        .texture-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+            opacity: 0.4;
+            mix-blend-mode: overlay;
+            pointer-events: none;
+        }
+
+        .grand-frame {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            right: 40px;
+            bottom: 40px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.1), inset 0 0 30px rgba(212, 175, 55, 0.1);
+            pointer-events: none;
+        }
+
+        .grand-frame::before,
+        .grand-frame::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: radial-gradient(2px 2px at 100px 50px, rgba(252, 246, 186, 0.5), transparent),
+                radial-gradient(2.5px 2.5px at 300px 150px, rgba(212, 175, 55, 0.6), transparent),
+                radial-gradient(1.5px 1.5px at 600px 80px, rgba(252, 246, 186, 0.4), transparent);
+            background-size: 1400px 400px;
+            animation: drift 40s linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+
+            100% {
+                transform: translateY(-400px) translateX(-200px);
+            }
+        }
+
+        #swarm-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 40;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .swarm-element {
+            position: absolute;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(15px 20px 15px rgba(0, 0, 0, 0.8)) brightness(0.85);
+        }
+
+        #intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 2s ease;
+        }
+
+        .start-prompt {
+            color: #222;
+            font-size: 1.2rem;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            font-family: 'Playfair Display', serif;
+        }
+
+        #text-container {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            width: 80%;
+            max-width: 1600px;
+        }
+
+        .cinematic-text {
+            font-size: 4.5rem;
+            line-height: 1.5;
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.1);
+            background: linear-gradient(to bottom right, var(--gold-light) 0%, var(--gold-mid) 40%, var(--gold-light) 60%, var(--gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 10px 30px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            filter: blur(20px);
+            transition: opacity 3s cubic-bezier(0.25, 1, 0.5, 1),
+                filter 3.5s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .cinematic-text.active {
+            opacity: 1;
+            filter: blur(0px);
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .cinematic-text.fade-out {
+            opacity: 0;
+            filter: blur(15px);
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .script-font {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 8rem;
+            display: block;
+            margin-top: 10px;
+            text-transform: none;
+            letter-spacing: 2px;
+            -webkit-text-fill-color: var(--gold-light);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .italic-serif {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            text-transform: lowercase;
+            font-size: 4rem;
+        }
+    </style>
+</head>
+
+<body onclick="startSequence()">
+
+    <!-- Voiceover player -->
+    <audio id="voice-audio"></audio>
+
+    <!-- Background Music (Loop removed) -->
+    <audio id="bgm-audio" src="bridgerton-theme.mp3"></audio>
+
+    <div id="intro-screen">
+        <div class="start-prompt">Click to Unseal</div>
+    </div>
+
+    <div id="swarm-container"></div>
+
+    <div id="cinematic-stage">
+        <div class="texture-overlay"></div>
+        <div class="particles"></div>
+        <div class="grand-frame"></div>
+        <div id="text-container"></div>
+    </div>
+
+    <script>
+        const scriptLines = [
+            {text: "Today marks an auspicious occasion in the ton.", transition: "fade", audio: "line1.mp3"},
+            {text: "The most dazzling jewel of our society...", transition: "fade", audio: "line2.mp3"},
+            {text: "<span class='script-font'>...the true<br>Diamond of the Season</span><br>celebrates her name day.", transition: "swarm", audio: "line3.mp3"},
+            {text: "Her intellect is matched only <br><span class='italic-serif'>by her radiant beauty</span>—", transition: "fade", audio: "line4.mp3"},
+            {text: "—surely, no psychology dissertation<br>could withstand such brilliance.", transition: "fade", audio: "line5.mp3"},
+            {text: "Lord Sathwik is a fortunate man indeed, <br><span class='italic-serif'>to court such perfection.</span>", transition: "fade", audio: "line6.mp3"},
+            {text: "Happy Birthday,<br>Lady Aishwarya.", transition: "fade", audio: "line7.mp3"},
+            {text: "<span class='script-font' style='font-size: 7rem;'>Yours Truly,<br>Lady Whistledown</span>", transition: "fade", audio: "line8.mp3"}
+        ];
+
+        const AUDIO_START_DELAY = 4000;
+        const TEXT_DISPLAY_DURATION = 6000;
+        const FADE_GAP = 2000;
+
+        let hasStarted = false;
+        let bgmFading = false;
+
+        function startSequence() {
+            if (hasStarted) return;
+            hasStarted = true;
+
+            const voice = document.getElementById('voice-audio');
+            const bgm = document.getElementById('bgm-audio');
+
+            // Mix audio: Lower BGM to 35%
+            bgm.volume = 0.35;
+            bgm.play().catch(e => console.log("BGM play failed:", e));
+
+            // Smart Audio Fader: Detects when the song has exactly 2 seconds left
+            bgm.addEventListener('timeupdate', () => {
+                if (!bgmFading && bgm.duration > 0) {
+                    if (bgm.duration - bgm.currentTime <= 2.0) {
+                        bgmFading = true;
+                        fadeOutBGM();
+                    }
+                }
+            });
+
+            voice.src = "intro.mp3";
+            voice.play().catch(e => console.log("Intro Voice play failed:", e));
+
+            const intro = document.getElementById('intro-screen');
+            intro.style.opacity = '0';
+            setTimeout(() => {intro.style.display = 'none';}, 2000);
+
+            setTimeout(() => {
+                document.getElementById('cinematic-stage').style.opacity = '1';
+                setTimeout(() => {playTextSequence(0);}, 2500);
+            }, AUDIO_START_DELAY);
+        }
+
+        // Custom 2-second audio fader
+        function fadeOutBGM() {
+            const bgm = document.getElementById('bgm-audio');
+            let currentVol = bgm.volume;
+            const steps = 40; // 40 intervals of 50ms = 2000ms (2 seconds)
+            const volDrop = currentVol / steps;
+
+            const fadeInterval = setInterval(() => {
+                if (currentVol > volDrop) {
+                    currentVol -= volDrop;
+                    bgm.volume = currentVol;
+                } else {
+                    bgm.volume = 0;
+                    bgm.pause();
+                    clearInterval(fadeInterval);
+                }
+            }, 50);
+        }
+
+        function triggerSwarm(onCoverCallback) {
+            const container = document.getElementById('swarm-container');
+            container.innerHTML = '';
+
+            const numParticles = 180;
+            const assets = [
+                'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f339.svg',
+                'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f338.svg',
+                'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f343.svg',
+                'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/1f41d.svg'
+            ];
+
+            for (let i = 0; i < numParticles; i++) {
+                const el = document.createElement('div');
+                el.className = 'swarm-element';
+                el.style.backgroundImage = `url('${assets[Math.floor(Math.random() * assets.length)]}')`;
+
+                const size = Math.random() * 250 + 100;
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+                el.style.top = `${Math.random() * 110 - 5}vh`;
+
+                const delay = Math.random() * 600;
+                const duration = 1200 + Math.random() * 600;
+                const startRot = Math.random() * 360;
+                const endRot = startRot + (Math.random() * 360 - 180);
+
+                container.appendChild(el);
+
+                el.animate([
+                    {left: '-30vw', transform: `rotate(${startRot}deg) scale(0.8)`},
+                    {left: '120vw', transform: `rotate(${endRot}deg) scale(1.2)`}
+                ], {
+                    duration: duration,
+                    delay: delay,
+                    easing: 'ease-in-out',
+                    fill: 'forwards'
+                });
+            }
+
+            setTimeout(onCoverCallback, 900);
+        }
+
+        function playTextSequence(index) {
+            if (index >= scriptLines.length) return;
+
+            const lineData = scriptLines[index];
+            const container = document.getElementById('text-container');
+            const voice = document.getElementById('voice-audio');
+
+            voice.src = lineData.audio;
+            voice.play().catch(e => console.log("Line voice play failed:", e));
+
+            const textEl = document.createElement('div');
+            textEl.className = 'cinematic-text';
+            textEl.innerHTML = lineData.text;
+            container.appendChild(textEl);
+
+            if (lineData.transition === 'swarm') {
+                textEl.style.transition = 'none';
+                textEl.classList.add('active');
+                setTimeout(() => {textEl.style.transition = '';}, 100);
+            } else {
+                setTimeout(() => {textEl.classList.add('active');}, 50);
+            }
+
+            const nextLine = scriptLines[index + 1];
+            const nextIsSwarm = nextLine && nextLine.transition === 'swarm';
+
+            setTimeout(() => {
+                if (index < scriptLines.length - 1) {
+
+                    if (nextIsSwarm) {
+                        triggerSwarm(() => {
+                            textEl.remove();
+                            playTextSequence(index + 1);
+                        });
+                    } else {
+                        textEl.classList.remove('active');
+                        textEl.classList.add('fade-out');
+
+                        setTimeout(() => {textEl.remove();}, 3500);
+                        setTimeout(() => {playTextSequence(index + 1);}, FADE_GAP);
+                    }
+                }
+            }, TEXT_DISPLAY_DURATION);
+        }
+    </script>
+</body>
+
+</html>
